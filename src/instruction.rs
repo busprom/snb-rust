@@ -7,6 +7,7 @@ use crate::{
 
 #[derive(BorshSerialize, BorshDeserialize, Debug)]
 pub enum SolInstruction {
+	CreateTokenAcc,
 	AddStaking {data: Staking},
 	Unstake,
 	Claim

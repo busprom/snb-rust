@@ -10,6 +10,7 @@ use crate::{
 		unstake::process_unstake,
 		claim::process_claim
 	},
+	token::create_token_account::process_create_token_account,
 	instruction::SolInstruction
 };
 pub struct Processor;
@@ -138,6 +139,27 @@ impl Processor {
 					to_record_accaunt,
 					token_auth_rules_programm,
 					token_auth_rules_acc
+				)
+			},
+			SolInstruction::CreateTokenAcc => {
+				let account_info_iter = &mut accounts.iter();
+				let payer = next_account_info(account_info_iter)?;
+				let new_owner = next_account_info(account_info_iter)?;
+				let mint = next_account_info(account_info_iter)?;
+				let mint_account = next_account_info(account_info_iter)?;
+				let token_program = next_account_info(account_info_iter)?;
+				let rent_program = next_account_info(account_info_iter)?;
+				let system_program = next_account_info(account_info_iter)?;
+				let spl_token_program = next_account_info(account_info_iter)?;
+				process_create_token_account(
+					payer,
+					new_owner,
+					mint,
+					mint_account,
+					token_program,
+					rent_program,
+					system_program,
+					spl_token_program
 				)
 			},
 		}
