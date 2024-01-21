@@ -38,7 +38,7 @@ pub fn process_add_staking<'a>(
   token_auth_rules_acc: &AccountInfo<'a>,
   mut data: Staking
 ) -> ProgramResult {
-  msg!("Add NFT");
+  msg!("Add SNB");
   if !owner.is_signer { return Err(NftError::WrongOwnerNFR.into()); }
 
   let meta = MetadataMetaplex::from_account_info(&metadata_account)?;

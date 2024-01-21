@@ -8,3 +8,9 @@ pub struct Staking {
   pub owner: Pubkey,
   pub mint: Pubkey
 }
+
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
+pub struct Admin {
+  pub snb_transfer: u64,
+  pub update: Option<Staking>
+}

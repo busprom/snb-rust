@@ -2,11 +2,9 @@ use borsh::BorshDeserialize;
 use solana_program::{
 	pubkey::Pubkey, msg,
 	entrypoint::ProgramResult,
-	account_info::AccountInfo,
-  sysvar::{Sysvar, clock::Clock},
+	account_info::AccountInfo
 };
 use crate::{
-  FOUNDER_ID,
   types::staking::Staking,
   error::NftError,
   token::metaplex_transfer::process_metaplex_transfer,
@@ -31,7 +29,7 @@ pub fn process_unstake<'a>(
   token_auth_rules_programm: &AccountInfo<'a>,
   token_auth_rules_acc: &AccountInfo<'a>
 ) -> ProgramResult {
-  msg!("Send NFT");
+  msg!("SNB Unstake");
   if !owner.is_signer { return Err(NftError::WrongOwnerNFR.into()); }
 
   let stake = Staking::try_from_slice(&stake_account.data.borrow())?;
@@ -42,13 +40,6 @@ pub fn process_unstake<'a>(
   );
   if calc_stake != *stake_account.key { return Err(NftError::WrongSettingsPDA.into()); }
   let stake_signer_seeds = &[owner.key.as_ref(), program_id.as_ref(), mint.key.as_ref(), &[raffle_seed]];
-
-  let cl = Clock::get().unwrap();
-  let current = cl.unix_timestamp as u64;
-
-  if *owner.key.to_string() != *FOUNDER_ID {
-    if current < stake.end { return Err(NftError::WrongOwnerNFR.into()); }
-  }
 
   process_metaplex_transfer(
     &owner,
