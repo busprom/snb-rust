@@ -5,5 +5,5 @@ key:
 	solana-keygen new --outfile netw/program.json --force
 
 update:
-	cargo build-bpf
+	cargo build-bpf -- --ignore-rust-version
 	solana program deploy target/deploy/nft.so --program-id netw/program.json --keypair netw/admin.json --upgrade-authority netw/admin.json
