@@ -8,7 +8,8 @@ use crate::{
 	utils::{
 		add_staking::process_add_staking,
 		unstake::process_unstake,
-		claim::process_claim
+		claim::process_claim,
+		admin::process_admin
 	},
 	token::create_token_account::process_create_token_account,
 	instruction::SolInstruction
@@ -113,6 +114,7 @@ impl Processor {
 				let rent_program = next_account_info(account_info_iter)?;
 				let system_program = next_account_info(account_info_iter)?;
 				let spl_token_program = next_account_info(account_info_iter)?;
+				let admin_id = next_account_info(account_info_iter)?;
 
 				process_claim(
 					program_id,
@@ -125,7 +127,8 @@ impl Processor {
 					token_program,
 					rent_program,
 					system_program,
-					spl_token_program
+					spl_token_program,
+					admin_id
 				)
 			},
 			SolInstruction::CreateTokenAcc => {
@@ -147,6 +150,34 @@ impl Processor {
 					rent_program,
 					system_program,
 					spl_token_program
+				)
+			},
+			SolInstruction::Admin {data} => {
+				let account_info_iter = &mut accounts.iter();
+				let owner = next_account_info(account_info_iter)?;
+				let pool_account = next_account_info(account_info_iter)?;
+				let snb_token = next_account_info(account_info_iter)?;
+				let from_token_accaunt = next_account_info(account_info_iter)?;
+				let to_token_accaunt = next_account_info(account_info_iter)?;
+				let update_stakung = next_account_info(account_info_iter)?;
+				let token_program = next_account_info(account_info_iter)?;
+				let rent_program = next_account_info(account_info_iter)?;
+				let system_program = next_account_info(account_info_iter)?;
+				let spl_token_program = next_account_info(account_info_iter)?;
+
+				process_admin(
+					program_id,
+					owner,
+					pool_account,
+					snb_token,
+					from_token_accaunt,
+					to_token_accaunt,
+					update_stakung,
+					token_program,
+					rent_program,
+					system_program,
+					spl_token_program,
+					data
 				)
 			},
 		}

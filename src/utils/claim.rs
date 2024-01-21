@@ -6,7 +6,6 @@ use solana_program::{
   sysvar::{Sysvar, clock::Clock},
 };
 use crate::{
-  ADMIN_ID,
   types::staking::Staking,
   error::NftError,
   token::transfer_token_seed::process_transfer_token_seed
@@ -23,7 +22,8 @@ pub fn process_claim<'a>(
   token_program: &AccountInfo<'a>,
   rent_program: &AccountInfo<'a>,
   system_program: &AccountInfo<'a>,
-  spl_token_program: &AccountInfo<'a>
+  spl_token_program: &AccountInfo<'a>,
+  admin_id: &AccountInfo<'a>
 ) -> ProgramResult {
   msg!("Send NFT");
   if !owner.is_signer { return Err(NftError::WrongOwnerNFR.into()); }
@@ -33,14 +33,14 @@ pub fn process_claim<'a>(
 
   let cl = Clock::get().unwrap();
   let current = cl.unix_timestamp as u64;
-  let days = (((stake.start - current) / 86400) as f32).floor() as u64;
+  let days = (((current - stake.start) / 86400) as f32).floor() as u64;
   if days < 1 { return Err(NftError::WrongOwnerNFR.into()); }
 
   let (calc_pool, pool_seed) = Pubkey::find_program_address(
-    &[ADMIN_ID.as_ref(), program_id.as_ref(), snb_token.key.as_ref()], &program_id
+    &[admin_id.key.as_ref(), program_id.as_ref(), snb_token.key.as_ref()], &program_id
   );
   if calc_pool != *pool_account.key { return Err(NftError::WrongSettingsPDA.into()); }
-  let pool_signer_seeds = &[ADMIN_ID.as_ref(), program_id.as_ref(), snb_token.key.as_ref(), &[pool_seed]];
+  let pool_signer_seeds = &[admin_id.key.as_ref(), program_id.as_ref(), snb_token.key.as_ref(), &[pool_seed]];
 
   process_transfer_token_seed(
     owner,
@@ -58,7 +58,7 @@ pub fn process_claim<'a>(
     pool_signer_seeds
   )?;
 
-  stake.start = stake.start - (days * 86400);
+  stake.start = stake.start + (days * 86400);
   let _ = stake.serialize(&mut &mut stake_account.data.borrow_mut()[..]);
   
   Ok(())

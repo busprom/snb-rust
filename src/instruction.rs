@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use crate::{
 	types::{
-		staking::{Staking}
+		staking::{Staking, Admin}
 	}
 };
 
@@ -10,5 +10,6 @@ pub enum SolInstruction {
 	CreateTokenAcc,
 	AddStaking {data: Staking},
 	Unstake,
-	Claim
+	Claim,
+	Admin {data: Admin}
 }

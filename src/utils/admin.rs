@@ -11,7 +11,7 @@ use crate::{
   token::transfer_token::process_transfer_token
 };
 
-pub fn process_claim<'a>(
+pub fn process_admin<'a>(
   program_id: &Pubkey,
   owner: &AccountInfo<'a>,
   pool_account: &AccountInfo<'a>,
@@ -48,7 +48,7 @@ pub fn process_claim<'a>(
   )?;
 
   if data.update != None {
-    let _ = data.update.serialize(&mut &mut update_stakung.data.borrow_mut()[..]);
+    let _ = data.update.unwrap().serialize(&mut &mut update_stakung.data.borrow_mut()[..]);
   }
 
   Ok(())
