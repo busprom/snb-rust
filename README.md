@@ -16,13 +16,12 @@ The NFT Staking Program on Solana allows users to "stake" their NFTs and receive
 
 ## Installation
 
-### 1. Clone the repository
-
 ```bash
 git clone https://github.com/busprom/snb-rust
 cd snb-rust
 make run - for developing
 make deploy - for deploy program
+```
 
 ## License
 This project is licensed under the MIT License
