@@ -1,4 +1,5 @@
-use borsh::{maybestd::io::Error as BorshError, BorshDeserialize, BorshSerialize};
+use solana_program::program_error::ProgramError as BorshError;
+use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
     pubkey::Pubkey,
     account_info::AccountInfo

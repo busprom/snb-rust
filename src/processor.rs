@@ -1,4 +1,4 @@
-use borsh::BorshDeserialize;
+use borsh::from_slice;
 use solana_program::{
 	pubkey::Pubkey,
 	entrypoint::ProgramResult,
@@ -18,7 +18,7 @@ pub struct Processor;
 
 impl Processor {
 	pub fn process(program_id: &Pubkey, accounts: &[AccountInfo], input: &[u8]) -> ProgramResult {
-		let instruction = SolInstruction::try_from_slice(input)?;
+		let instruction = from_slice::<SolInstruction>(input)?;
 		match instruction {
 			SolInstruction::AddStaking {data} => {
 				let account_info_iter = &mut accounts.iter();

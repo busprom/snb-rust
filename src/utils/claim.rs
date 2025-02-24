@@ -1,13 +1,13 @@
-use borsh::{BorshDeserialize, BorshSerialize};
+use borsh::{BorshSerialize, from_slice};
 use solana_program::{
 	pubkey::Pubkey, msg,
 	entrypoint::ProgramResult,
 	account_info::AccountInfo,
   sysvar::{Sysvar, clock::Clock},
+  program_error::ProgramError,
 };
 use crate::{
   types::staking::Staking,
-  error::NftError,
   token::transfer_token_seed::process_transfer_token_seed
 };
 
@@ -26,20 +26,20 @@ pub fn process_claim<'a>(
   admin_id: &AccountInfo<'a>
 ) -> ProgramResult {
   msg!("Send NFT");
-  if !owner.is_signer { return Err(NftError::WrongOwnerNFR.into()); }
+  if !owner.is_signer { return Err(ProgramError::InvalidAccountData); }
 
-  let mut stake = Staking::try_from_slice(&stake_account.data.borrow())?;
-  if stake.owner != *owner.key { return Err(NftError::WrongOwnerNFR.into()); }
+  let mut stake = from_slice::<Staking>(&stake_account.data.borrow())?;
+  if stake.owner != *owner.key { return Err(ProgramError::InvalidAccountData); }
 
   let cl = Clock::get().unwrap();
   let current = cl.unix_timestamp as u64;
   let days = (((current - stake.start) / 86400) as f32).floor() as u64;
-  if days < 1 { return Err(NftError::WrongOwnerNFR.into()); }
+  if days < 1 { return Err(ProgramError::InvalidAccountData); }
 
   let (calc_pool, pool_seed) = Pubkey::find_program_address(
     &[admin_id.key.as_ref(), program_id.as_ref(), snb_token.key.as_ref()], &program_id
   );
-  if calc_pool != *pool_account.key { return Err(NftError::WrongSettingsPDA.into()); }
+  if calc_pool != *pool_account.key { return Err(ProgramError::InvalidAccountData); }
   let pool_signer_seeds = &[admin_id.key.as_ref(), program_id.as_ref(), snb_token.key.as_ref(), &[pool_seed]];
 
   process_transfer_token_seed(

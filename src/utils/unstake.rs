@@ -1,12 +1,12 @@
-use borsh::BorshDeserialize;
+use borsh::from_slice;
 use solana_program::{
 	pubkey::Pubkey, msg,
 	entrypoint::ProgramResult,
-	account_info::AccountInfo
+	account_info::AccountInfo,
+  program_error::ProgramError,
 };
 use crate::{
   types::staking::Staking,
-  error::NftError,
   token::metaplex_transfer::process_metaplex_transfer,
 };
 
@@ -30,15 +30,15 @@ pub fn process_unstake<'a>(
   token_auth_rules_acc: &AccountInfo<'a>
 ) -> ProgramResult {
   msg!("SNB Unstake");
-  if !owner.is_signer { return Err(NftError::WrongOwnerNFR.into()); }
+  if !owner.is_signer { return Err(ProgramError::InvalidAccountData); }
 
-  let stake = Staking::try_from_slice(&stake_account.data.borrow())?;
-  if stake.owner != *owner.key { return Err(NftError::WrongOwnerNFR.into()); }
+  let stake = from_slice::<Staking>(&stake_account.data.borrow())?;
+  if stake.owner != *owner.key { return Err(ProgramError::InvalidAccountData); }
 
   let (calc_stake, raffle_seed) = Pubkey::find_program_address(
     &[owner.key.as_ref(), program_id.as_ref(), mint.key.as_ref()], &program_id
   );
-  if calc_stake != *stake_account.key { return Err(NftError::WrongSettingsPDA.into()); }
+  if calc_stake != *stake_account.key { return Err(ProgramError::InvalidAccountData); }
   let stake_signer_seeds = &[owner.key.as_ref(), program_id.as_ref(), mint.key.as_ref(), &[raffle_seed]];
 
   process_metaplex_transfer(

@@ -1,4 +1,4 @@
-use borsh::BorshSerialize;
+use borsh::{BorshSerialize, to_vec};
 use solana_program::{
 	pubkey::Pubkey, msg,
 	entrypoint::ProgramResult,
@@ -6,13 +6,13 @@ use solana_program::{
   program::invoke_signed,
   sysvar::{Sysvar, rent::Rent, clock::Clock},
   system_instruction,
+  program_error::ProgramError,
 };
 use crate::{
   types::{
     staking::Staking,
     metadata::MetadataMetaplex
   },
-  error::NftError,
   token::metaplex_transfer::process_metaplex_transfer,
   FOUNDER_ID
 };
@@ -39,16 +39,16 @@ pub fn process_add_staking<'a>(
   mut data: Staking
 ) -> ProgramResult {
   msg!("Add SNB");
-  if !owner.is_signer { return Err(NftError::WrongOwnerNFR.into()); }
+  if !owner.is_signer { return Err(ProgramError::InvalidAccountData); }
 
   let meta = MetadataMetaplex::from_account_info(&metadata_account)?;
-  if meta.data.creators.unwrap()[1].address.to_string() != FOUNDER_ID { return Err(NftError::AdminRequired.into()); }
-  if meta.mint != *mint.key { return Err(NftError::AdminRequired.into()); }
+  if meta.data.creators.unwrap()[1].address.to_string() != FOUNDER_ID { return Err(ProgramError::InvalidAccountData); }
+  if meta.mint != *mint.key { return Err(ProgramError::InvalidAccountData); }
 
   let (calc_stake, raffle_seed) = Pubkey::find_program_address(
     &[owner.key.as_ref(), program_id.as_ref(), mint.key.as_ref()], &program_id
   );
-  if calc_stake != *stake_account.key { return Err(NftError::WrongSettingsPDA.into()); }
+  if calc_stake != *stake_account.key { return Err(ProgramError::InvalidAccountData); }
   let stake_signer_seeds = &[owner.key.as_ref(), program_id.as_ref(), mint.key.as_ref(), &[raffle_seed]];
 
   process_metaplex_transfer(
@@ -84,7 +84,7 @@ pub fn process_add_staking<'a>(
 
   msg!("Create Staking account");
   let rent = &Rent::from_account_info(&rent_program)?;
-  let space = data.try_to_vec()?.len();
+  let space = to_vec(&data)?.len();
   let lamports = rent.minimum_balance(space);
   invoke_signed(
     &system_instruction::create_account(

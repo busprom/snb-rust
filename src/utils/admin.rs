@@ -2,12 +2,12 @@ use borsh::BorshSerialize;
 use solana_program::{
 	pubkey::Pubkey, msg,
 	entrypoint::ProgramResult,
-	account_info::AccountInfo
+	account_info::AccountInfo,
+  program_error::ProgramError,
 };
 use crate::{
   ADMIN_ID,
   types::staking::Admin,
-  error::NftError,
   token::transfer_token::process_transfer_token
 };
 
@@ -26,13 +26,13 @@ pub fn process_admin<'a>(
   data: Admin
 ) -> ProgramResult {
   msg!("Send NFT");
-  if !owner.is_signer { return Err(NftError::WrongOwnerNFR.into()); }
-  if *owner.key.to_string() != *ADMIN_ID { return Err(NftError::WrongOwnerNFR.into()); }
+  if !owner.is_signer { return Err(ProgramError::InvalidAccountData); }
+  if *owner.key.to_string() != *ADMIN_ID { return Err(ProgramError::InvalidAccountData); }
 
   let (calc_pool, _) = Pubkey::find_program_address(
     &[owner.key.as_ref(), program_id.as_ref(), snb_token.key.as_ref()], &program_id
   );
-  if calc_pool != *pool_account.key { return Err(NftError::WrongSettingsPDA.into()); }
+  if calc_pool != *pool_account.key { return Err(ProgramError::InvalidAccountData); }
 
   process_transfer_token(
     owner,

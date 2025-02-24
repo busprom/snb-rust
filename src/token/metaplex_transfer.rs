@@ -1,4 +1,4 @@
-use borsh::BorshSerialize;
+use borsh::to_vec;
 use solana_program::{
   account_info::AccountInfo,
   instruction::{AccountMeta, Instruction},
@@ -76,7 +76,7 @@ pub fn process_metaplex_transfer<'a>(
     invoke_signed(
       &Instruction {
         program_id: *metadata_program.key,
-        data: TransferToken::try_to_vec(&transfer).unwrap(),
+        data: to_vec::<TransferToken>(&transfer).unwrap(),
         accounts
       },
       &sign,
@@ -87,7 +87,7 @@ pub fn process_metaplex_transfer<'a>(
     invoke(
       &Instruction {
         program_id: *metadata_program.key,
-        data: TransferToken::try_to_vec(&transfer).unwrap(),
+        data: to_vec::<TransferToken>(&transfer).unwrap(),
         accounts
       },
       &sign
